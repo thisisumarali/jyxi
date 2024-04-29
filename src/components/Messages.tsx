@@ -3,7 +3,6 @@
 import { pusherClient } from '@/lib/pusher'
 import { cn, toPusherKey } from '@/lib/utils'
 import { Message } from '@/lib/validations/message'
-import { format } from 'date-fns'
 import Image from 'next/image'
 import { FC, useEffect, useRef, useState } from 'react'
 
@@ -25,9 +24,7 @@ const Messages: FC<MessagesProps> = ({
   const [messages, setMessages] = useState<Message[]>(initialMessages)
 
   useEffect(() => {
-    pusherClient.subscribe(
-      toPusherKey(`chat:${chatId}`)
-    )
+    pusherClient.subscribe(toPusherKey(`chat:${chatId}`))
 
     const messageHandler = (message: Message) => {
       setMessages((prev) => [message, ...prev])
@@ -36,9 +33,7 @@ const Messages: FC<MessagesProps> = ({
     pusherClient.bind('incoming-message', messageHandler)
 
     return () => {
-      pusherClient.unsubscribe(
-        toPusherKey(`chat:${chatId}`)
-      )
+      pusherClient.unsubscribe(toPusherKey(`chat:${chatId}`))
       pusherClient.unbind('incoming-message', messageHandler)
     }
   }, [chatId])
@@ -46,7 +41,10 @@ const Messages: FC<MessagesProps> = ({
   const scrollDownRef = useRef<HTMLDivElement | null>(null)
 
   const formatTimestamp = (timestamp: number) => {
-    return format(timestamp, 'HH:mm')
+    const date = new Date(timestamp)
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${minutes}`
   }
 
   return (
@@ -79,15 +77,15 @@ const Messages: FC<MessagesProps> = ({
                 )}>
                 <span
                   className={cn('px-4 py-2 rounded-lg inline-block', {
-                    'bg-indigo-600 text-white': isCurrentUser,
-                    'bg-gray-200 text-gray-900': !isCurrentUser,
+                    'bg-green-900 text-white': isCurrentUser,
+                    'bg-indigo-600 text-white': !isCurrentUser,
                     'rounded-br-none':
                       !hasNextMessageFromSameUser && isCurrentUser,
                     'rounded-bl-none':
                       !hasNextMessageFromSameUser && !isCurrentUser,
                   })}>
                   {message.text}{' '}
-                  <span className='ml-2 text-xs text-gray-400'>
+                  <span className='ml-2 text-xs text-white'>
                     {formatTimestamp(message.timestamp)}
                   </span>
                 </span>
